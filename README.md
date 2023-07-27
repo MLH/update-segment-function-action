@@ -21,6 +21,40 @@ The purpose of this repo is to provide a workflow which uses [Github Actions](ht
 - Check your Segment workspace to see if the function was sucessfully added.
 - If added, grab the function-id and input it into main.yml to allow your function to be updated. This can be found in the URL when looking at an indvidual function `https://app.segment.com/demo-segment-workspace/functions/catalog/<FUNCTION ID HERE>/edit/code`
 
+## Example Usage
+```yml
+on: [push]
+jobs:
+  deploy:
+    name: Update Source Function in Segment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Function
+        uses: actions/checkout@v2
+
+      - name: Prepare Function
+        shell: bash
+        run: |
+          echo "Function Code Is"
+          cp lib/function.js lib/function.txt
+          value="$(< lib/function.txt)"
+          value="${value//'%'/'%25'}"
+          value="${value//$'\n'/'%0A'}"
+          value="${value//$'\r'/'%0D'}"
+          echo $value
+          echo "::set-output name=function_code::$value"
+        id: checkout
+
+      - name: Send Function to Segment
+        uses: MLH/update-segment-function-action@v1.0.0
+        with:
+          token: ${{ secrets.SEGMENT_TOKEN }}
+          function-code: ${{ steps.checkout.outputs.function_code }} # don't update this
+          function-name: "Source Function"
+          function-type: Source
+          function-id: sfnc_wXzcDGFR3KmjLDrtSawNHf
+
+```
 
 ## Components
 
