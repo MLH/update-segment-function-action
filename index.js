@@ -34,5 +34,5 @@ async function main() {
 }
 
 main()
-    .then((data) => console.log(`Created or Updated Function with ID: ${data.function.id} succesfully!`))
+    .then((body) => console.log(`Created or Updated Function with ID: ${body?.data?.function?.id} succesfully!`))
     .catch(err => core.setFailed(err.message));
