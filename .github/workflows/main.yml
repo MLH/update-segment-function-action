@@ -22,37 +22,35 @@ jobs:
       - name: Sending Function to Segment
         uses: samgehret/manageSegmentFunction@v1.6 # Uses an action in the root directory will need to be updated once this is on the Actions Marketplace.
         with:
-          token: '< your segment token >'
+          token: "< your segment token >"
           function-code: ${{ steps.checkout.outputs.function_code }} # don't update this
-          function-name: 'Function 1 Name'
+          function-name: "Function 1 Name"
           function-type: Destination
-          workspaceID: <Workspace ID>
           # function-id: <function id> # Set this value after the function is created.
-
 # Uncomment job_2 below if you want to manage another function
 
-  # job_2:
-  #   name: Create / Update Function 2 to Segment
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout and Preparing Function
-  #       uses: actions/checkout@v2
-  #     - shell: bash
-  #       run: |
-  #         echo "Function Code Is"
-  #         cp lib/function.js lib/function.txt
-  #         value="$(< lib/function.txt)"
-  #         value="${value//'%'/'%25'}"
-  #         value="${value//$'\n'/'%0A'}"
-  #         value="${value//$'\r'/'%0D'}"
-  #         echo $value
-  #         echo "::set-output name=function_code::$value"
-  #       id: checkout
-  #     - name: Sending Function to Segment
-  #       uses: ./ # Uses an action in the root directory
-  #       with:
-  #         token: '< your segment token >'
-  #         function-code: ${{ steps.checkout.outputs.function_code }}
-  #         function-name: 'Function 2 Name'
-  #         workspaceID: <Workspace ID>
-  #         function-id: <function id>
+# job_2:
+#   name: Create / Update Function 2 to Segment
+#   runs-on: ubuntu-latest
+#   steps:
+#     - name: Checkout and Preparing Function
+#       uses: actions/checkout@v2
+#     - shell: bash
+#       run: |
+#         echo "Function Code Is"
+#         cp lib/function.js lib/function.txt
+#         value="$(< lib/function.txt)"
+#         value="${value//'%'/'%25'}"
+#         value="${value//$'\n'/'%0A'}"
+#         value="${value//$'\r'/'%0D'}"
+#         echo $value
+#         echo "::set-output name=function_code::$value"
+#       id: checkout
+#     - name: Sending Function to Segment
+#       uses: ./ # Uses an action in the root directory
+#       with:
+#         token: '< your segment token >'
+#         function-code: ${{ steps.checkout.outputs.function_code }}
+#         function-name: 'Function 2 Name'
+#         workspaceID: <Workspace ID>
+#         function-id: <function id>

@@ -3,79 +3,36 @@ const github = require('@actions/github');
 const axios = require('axios')
 const functionCode = core.getInput('function-code')
 const functionName = core.getInput('function-name')
-const workspaceID = core.getInput('workspaceID')
 const functionID = core.getInput('function-id')
 const token = core.getInput('token')
 const functionType = core.getInput('function-type').toUpperCase()
 
-// Appends the Auth Header to all Axios requests.
-axios.interceptors.request.use(function (config) {
-    config.headers.Authorization = `Bearer ${token}`;
+async function main() {
+    // Appends the Auth Header to all Axios requests.
+    axios.interceptors.request.use(function (config) {
+        config.headers.Authorization = `Bearer ${token}`;
 
-    return config;
-});
-try {
-    //First returns a list of all functions in a workspace
-    axios.get(`https://platform.segmentapis.com/v1beta/workspaces/${workspaceID}/functions`, {
-        params: {
-            type: functionType
-        }
-    })
-        .then(function (response) {
-            console.log(response.data.functions)
-            const functionsList = response.data.functions
-            // Checks for presence of a FunctionID input and checks to see if it exists
-            if (functionID) {
-                console.log('found functionID')
-                functionsList.forEach(functionReturned => {
-                    // If the function exists, update it.
-                    if (functionReturned.id == functionID) {
-                        console.log('function exists, update')
-                        // Build body for Update / Patch request
-                        const patchBodyParams = {
-                            update_mask: "function.code",
-                            function: {
-                                id: functionID,
-                                workspace_id: workspaceID,
-                                code: functionCode,
-                                buildpack: "boreal"
-                            }
-                        }
-                        updateFunction(workspaceID, patchBodyParams, functionID)
-                    }
-                })
-            }
-            else {
-                // If function is not found, default to creating a new one.
-                console.log('creating new function')
-                // Puts together the body of the payload sent to Create function endpoint.
-                const createBodyParams = {
-                    type: functionType,
-                    function: {
-                        display_name: functionName,
-                        code: functionCode,
-                        buildpack: "boreal"
-                    }
-                }
-                createFunction(workspaceID, createBodyParams)
-            }
+        return config;
+    });
 
-        })
-} catch (error) {
-    core.setFailed(error.message);
+    const bodyParams = {
+        code: functionCode,
+        display_name: functionName,
+        resourceType: functionType,
+    }
+
+    let res;
+
+    // If no function ID, just create the function.
+    if (!functionID) {
+        res = await axios.post(`https://api.segmentapis.com/functions`, bodyParams);
+    } else {
+        res = await axios.patch(`https://api.segmentapis.com/functions/${functionID}`, bodyParams);
+    }
+
+    return res.data;
 }
 
-function updateFunction(workspaceIDInput, patchParamsInput, functionIDInput) {
-    axios.patch(`https://platform.segmentapis.com/v1beta/workspaces/${workspaceIDInput}/functions/${functionIDInput}`,
-        patchParamsInput)
-    console.log('calling updating function')
-}
-
-function createFunction(workspaceIDInput, createBodyParamsInput) {
-    console.log('calling creating function')
-    axios.post(`https://platform.segmentapis.com/v1beta/workspaces/${workspaceIDInput}/functions`,
-        createBodyParamsInput)
-        .then(function (response) {
-            console.log('Function Created Successfully')
-        })
-}
+main()
+    .then((data) => console.log(`Created or Updated Function with ID: ${data.function.id} succesfully!`))
+    .catch(err => core.setFailed(err.message));
